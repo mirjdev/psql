@@ -82,7 +82,7 @@ select * from booking_jsonb where cplx_booking_txt  like '%SIMONS14%' limit 10;
 -- Limit	[NULL]	0.54 - 50.09	10	1.044	[NULL]
 -- Index Scan	booking_jsonb	0.54 - 564915.61	10	1.041	(booking_jsonb.cplx_booking_txt ~~ '%SIMONS14%'::text)
 
--- рекурсия числа Фибоначчи
+-- рекурсия, числа Фибоначчи
 with recursive fib(i,a,b) as (
     values(0,1,1)
     union all
@@ -92,6 +92,20 @@ with recursive fib(i,a,b) as (
     from fib where i < 10
 )
 select * from fib;
+--
+"i","a","b"
+0,1,1
+1,1,2
+2,2,3
+3,3,5
+4,5,8
+5,8,13
+6,13,21
+7,21,34
+8,34,55
+9,55,89
+10,89,144
+
 
 --- Статьи замечательных людей ---
 ------------------------------------------------------------------------------------------------------------------------
