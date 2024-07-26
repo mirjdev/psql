@@ -93,18 +93,105 @@ with recursive fib(i,a,b) as (
 )
 select * from fib;
 --
-"i","a","b"
-0,1,1
-1,1,2
-2,2,3
-3,3,5
-4,5,8
-5,8,13
-6,13,21
-7,21,34
-8,34,55
-9,55,89
-10,89,144
+|i  |a  |b  |
+|---|---|---|
+|0  |1  |1  |
+|1  |1  |2  |
+|2  |2  |3  |
+|3  |3  |5  |
+|4  |5  |8  |
+|5  |8  |13 |
+|6  |13 |21 |
+|7  |21 |34 |
+|8  |34 |55 |
+|9  |55 |89 |
+|10 |89 |144|
+
+-- Оконные функции
+-- https://postgrespro.ru/docs/postgrespro/10/functions-window
+-- https://postgrespro.ru/docs/postgrespro/10/sql-expressions#SYNTAX-WINDOW-FUNCTIONS
+-- https://habr.com/ru/companies/tensor/articles/785144/
+with tbl (id, part, header, score) as (
+    values
+        (1,'part1','header', 10),
+        (2,'part1','header', 20),
+        (3,'part2','header', 9),
+        (4,'part2','header', 19),
+        (5,'part3','header', 50)
+)
+
+select *
+     , row_number() over ()  as row_number	 -- порядковый номер строки вычисляется функцией
+from  tbl order by id desc;
+|id |part |header|score|row_number|
+|---|-----|------|-----|----------|
+|5  |part3|header|50   |5         |
+|4  |part2|header|19   |4         |
+|3  |part2|header|9    |3         |
+|2  |part1|header|20   |2         |
+|1  |part1|header|10   |1         |
+
+
+------------------------------------------------------------
+with tbl (id, part, header, score, deleted) as (
+    values
+        (1,'part1','header', 10, false),
+        (2,'part1','header', 20, false),
+        (3,'part2','header', 9, true),
+        (4,'part2','header', 19, false),
+        (5,'part3','header', 50, false)
+)
+
+select *
+     , row_number() over ()  as row_number	 			   -- порядковый номер строки вычисляется функцией
+     , sum(score) filter (where deleted is false)
+    over(partition by part) as score_by_part     -- счет по партициям, накладывается фильтр не удаленные
+     , avg(score) over window_all as avg_all 			   -- средний счет по всем
+     , avg(score) over window_by_part as avg_by_part        -- средний счет в партиции
+     , lag(score) over (order by score)	as privius_score   -- лаг, находим счет который был перед (важна сортировка)
+     , lead(score) over (order by score)	as next_score      -- находим счет который следующий, к чему стремиться
+from  tbl
+window window_all as (),							   -- определение окон для переиспользования
+       window_by_part as (partition by part)
+order by score desc
+;
+|id |part |header|score|deleted|row_number|score_by_part|avg_all|avg_by_part|privius_score|next_score|
+|---|-----|------|-----|-------|----------|-------------|-------|-----------|-------------|----------|
+|5  |part3|header|50   |false  |5         |50           |21,6   |50         |20           |          |
+|2  |part1|header|20   |false  |4         |30           |21,6   |15         |19           |50        |
+|4  |part2|header|19   |false  |3         |19           |21,6   |14         |10           |20        |
+|1  |part1|header|10   |false  |2         |30           |21,6   |15         |9            |19        |
+|3  |part2|header|9    |true   |1         |19           |21,6   |14         |             |10        |
+
+------------------------------------------------------------
+-- так же можно считать через баланс счета на момент, по таблице транзакций
+with balance_change (id, change) as (
+    values
+        (1,10),
+        (2,-5),
+        (3,-3),
+        (4,100),
+        (5,-50)
+)
+
+select *
+     , sum(change) over (order by id) as balance
+from  balance_change
+order by id
+;
+--
+|id |change|balance|
+|---|------|-------|
+|1  |10    |10     |
+|2  |-5    |5      |
+|3  |-3    |2      |
+|4  |100   |102    |
+|5  |-50   |52     |
+
+------------------------------------------------------------
+-- RETURNING * вернет все значения, RETURNING accoint_id - вернет только этот столбец
+insert into account (login) values ('adfsf') RETURNING *;
+
 
 
 --- Статьи замечательных людей ---
