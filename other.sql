@@ -123,6 +123,7 @@ with tbl (id, part, header, score) as (
 select *
      , row_number() over ()  as row_number	 -- порядковый номер строки вычисляется функцией
 from  tbl order by id desc;
+--
 |id |part |header|score|row_number|
 |---|-----|------|-----|----------|
 |5  |part3|header|50   |5         |
@@ -145,16 +146,16 @@ with tbl (id, part, header, score, deleted) as (
 select *
      , row_number() over ()  as row_number	 			   -- порядковый номер строки вычисляется функцией
      , sum(score) filter (where deleted is false)
-    over(partition by part) as score_by_part     -- счет по партициям, накладывается фильтр не удаленные
+    over(partition by part) as score_by_part               -- счет по партициям, накладывается фильтр не удаленные
      , avg(score) over window_all as avg_all 			   -- средний счет по всем
-     , avg(score) over window_by_part as avg_by_part        -- средний счет в партиции
+     , avg(score) over window_by_part as avg_by_part       -- средний счет в партиции
      , lag(score) over (order by score)	as privius_score   -- лаг, находим счет который был перед (важна сортировка)
-     , lead(score) over (order by score)	as next_score      -- находим счет который следующий, к чему стремиться
+     , lead(score) over (order by score)	as next_score  -- находим счет который следующий, к чему стремиться
 from  tbl
-window window_all as (),							   -- определение окон для переиспользования
+window window_all as (),							       -- определение окон для переиспользования
        window_by_part as (partition by part)
-order by score desc
-;
+order by score desc;
+--
 |id |part |header|score|deleted|row_number|score_by_part|avg_all|avg_by_part|privius_score|next_score|
 |---|-----|------|-----|-------|----------|-------------|-------|-----------|-------------|----------|
 |5  |part3|header|50   |false  |5         |50           |21,6   |50         |20           |          |
