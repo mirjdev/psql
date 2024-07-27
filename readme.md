@@ -20,3 +20,9 @@
 - возвращаемые значения
 
 #### sets.sql операции над множествами 
+
+
+### Полезные ссылки 
+- https://habr.com/ru/companies/postgrespro/articles/462877/ -- Егор Рогов postgrespro
+- https://habr.com/ru/users/Kilor/ -- Тензор
+- https://github.com/dataegret/pg-utils/tree/master/sql - полезные скрипты от Data Egret

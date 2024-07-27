@@ -3,8 +3,14 @@
 --- Представления, функции ---
 ------------------------------------------------------------------------------------------------------------------------
 -- представление, в котором можно отлеживать процесс создания индексов
-select *
-from pg_stat_progress_create_index;
+select * from pg_stat_progress_create_index;
+
+-- статистика по таблицам и их колонкам, используем для анализа, при составлении запросов
+-- https://postgrespro.ru/docs/postgrespro/10/view-pg-stats
+select * from pg_stats order by tablename;
+
+-- по одной строке на каждую таблицу в текущей базе данных со статистикой по обращениям к этой таблице.
+select * from pg_stat_all_tables;
 
 -- размер таблиц и индексов
 SELECT
@@ -194,8 +200,3 @@ order by id
 insert into account (login) values ('adfsf') RETURNING *;
 
 
-
---- Статьи замечательных людей ---
-------------------------------------------------------------------------------------------------------------------------
-https://habr.com/ru/companies/postgrespro/articles/462877/ -- Егор Рогов postgrespro
-https://habr.com/ru/users/Kilor/ -- Тензор
